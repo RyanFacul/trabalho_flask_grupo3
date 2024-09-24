@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylesCarrinho.css')}}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <title>Carrinho de Compras</title>
+</head>
+<body>
+    
+    <header>
+        <nav class="navbar bg-dark d-flex justify-content-center align-itens-center ">
+            <div class="container-fluid">
+                <a class="navbar-brand ml-2" href="{{ url_for('home') }}"><span>SUPERMERCADO ECONOMIZA</span></a>
+                <div class="">
+                    <a href="{{ url_for('cliente') }}"><button class="btn btn-outline-light mx-2" type="button">Área do Cliente</button></a>
+                    <a href="{{ url_for('pedido') }}"><button class="btn btn-outline-light mx-2" type="button">Pedidos</button></a>
+                    <a href="{{ url_for('logout') }}"><button class="btn btn-outline-danger mx-2" type="button">Sair</button></a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <h1 class="mt-3">Carrinho de Compras</h1>
+
+        <section class="itens">
+            <h2>Itens no Carrinho</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Nome do Produto</th>
+                        <th>Categoria</th>
+                        <th>Valor</th>
+                        <th>Quantidade</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if carrinho %}
+                        {% for item in carrinho %}
+                            <tr>
+                                <td>{{ item['nomeProduto'] }}</td>
+                                <td>{{ item['categoriaProduto'] }}</td>
+                                <td>{{ item['valorProduto'] }}</td>
+                                <td>
+                                    <input type="number" value="1" min="1" id="quantidade_{{ loop.index }}" name="quantidade_{{ loop.index }}" />
+                                </td>
+                                <td>
+                                    <!-- Valor total pode ser calculado com JavaScript ou no backend -->
+                                    {{ item['valorProduto'] }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5">Seu carrinho está vazio.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="pagamento">
+            <h2>Finalizar Compra</h2>
+            <form action="{{ url_for('fechar_compra') }}" method="POST" id="formPagamento">
+                <label for="formaPagamento">Forma de Pagamento:</label>
+                <select id="formaPagamento" name="formaPagamento" required>
+                    <option value="pix">PIX</option>
+                    <option value="cartao">Cartão de Crédito</option>
+                </select>
+
+                <div id="pagamentoCartao" style="display: none;">
+                    <h3>Detalhes do Cartão de Crédito</h3>
+                    <label for="numeroCartao">Número do Cartão:</label>
+                    <input type="text" id="numeroCartao" name="numeroCartao" pattern="\d{16}" placeholder="1234 5678 9012 3456" />
+                    
+                    <label for="nomeTitular">Nome do Titular:</label>
+                    <input type="text" id="nomeTitular" name="nomeTitular" />
+                    
+                    <label for="validadeCartao">Validade (MM/AA):</label>
+                    <input type="text" id="validadeCartao" name="validadeCartao" pattern="\d{2}/\d{2}" placeholder="MM/AA" />
+                    
+                    <label for="cvv">CVV:</label>
+                    <input type="text" id="cvv" name="cvv" pattern="\d{3}" placeholder="123" />
+                    
+                    <label for="parcelas">Número de Parcelas:</label>
+                    <select id="parcelas" name="parcelas">
+                        <option value="1">1x</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                        <option value="5">5x</option>
+                        <option value="6">6x</option>
+                        <option value="7">7x</option>
+                        <option value="8">8x</option>
+                        <option value="9">9x</option>
+                        <option value="10">10x</option>
+                        <option value="11">11x</option>
+                        <option value="12">12x</option>
+                    </select>
+                </div>
+
+                <div id="pagamentoPix" style="display: none;">
+                    <h3>Detalhes PIX</h3>
+                    <p>Após finalizar a compra, o código QR do PIX será gerado para o pagamento.</p>
+                </div>
+
+                <button type="submit">Finalizar Compra</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('formaPagamento').addEventListener('change', function() {
+            var formaPagamento = this.value;
+            var pagamentoCartao = document.getElementById('pagamentoCartao');
+            var pagamentoPix = document.getElementById('pagamentoPix');
+            
+            if (formaPagamento === 'cartao') {
+                pagamentoCartao.style.display = 'block';
+                pagamentoPix.style.display = 'none';
+                // Definir atributos de "required" para os campos do cartão
+                document.getElementById('numeroCartao').setAttribute('required', 'required');
+                document.getElementById('nomeTitular').setAttribute('required', 'required');
+                document.getElementById('validadeCartao').setAttribute('required', 'required');
+                document.getElementById('cvv').setAttribute('required', 'required');
+            } else if (formaPagamento === 'pix') {
+                pagamentoCartao.style.display = 'none';
+                pagamentoPix.style.display = 'block';
+                // Remover atributos de "required" dos campos do cartão
+                document.getElementById('numeroCartao').removeAttribute('required');
+                document.getElementById('nomeTitular').removeAttribute('required');
+                document.getElementById('validadeCartao').removeAttribute('required');
+                document.getElementById('cvv').removeAttribute('required');
+            }
+        });
+    </script>
+
+</body>
+</html>
